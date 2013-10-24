@@ -23,13 +23,8 @@ class CGC_Activity_Feed {
 		add_filter( 'cgcaf_feed_item_image', array( $this, 'image_feed_item' ), 10, 3 );
 
 		add_action( 'wp_ajax_cgcaf_initialize', array( $this, 'init_feed') );
-		add_action( 'wp_ajax_nopriv_cgcaf_initialize', array( $this, 'init_feed') );
-
 		add_filter( 'heartbeat_received', array( $this, 'hb_latest_activity' ), 10, 3 );
-		add_filter( 'heartbeat_nopriv_received', array( $this, 'hb_latest_activity' ), 10, 3 );
-
 		add_action( 'wp_ajax_cgcaf_mark_read', array( $this, 'mark_read') );
-		add_action( 'wp_ajax_nopriv_cgcaf_mark_read', array( $this, 'mark_read') );
 
 		add_action( 'delete_post', array( $this, '_autodelete' ) );
 	}
@@ -71,7 +66,7 @@ class CGC_Activity_Feed {
 			if( ! in_array( $item, $feed ) ){
 				$new_feed = $feed;
 				array_unshift( $new_feed, $item ); // we want this at the beginning
-				update_user_meta( $user_id, $this->feed_var, $new_feed, $feed );
+				$this->update_feed( $user_id, $new_feed, $feed );
 			}
 		}
 		return $new_key;
@@ -84,7 +79,7 @@ class CGC_Activity_Feed {
 		foreach( $user as $user_id ){
 			$feed = $this->get_items( $user_id );
 			$new_feed = $this->_remove_item( $feed, $key );
-			update_user_meta( $user_id, $this->feed_var, $new_feed, $feed );
+			$this->update_feed( $user_id, $new_feed, $feed );
 		}
 	}
 
@@ -95,6 +90,14 @@ class CGC_Activity_Feed {
 			}
 		}
 		return $feed;
+	}
+
+	function update_feed( $user_id, $new_feed, $old_feed = array() ){
+		if( ! $new_feed ){
+			delete_user_meta( $user_id, $this->feed_var );
+		} else {
+			update_user_meta( $user_id, $this->feed_var, $new_feed, $old_feed );
+		}
 	}
 
 	function _autodelete( $post_id ){
@@ -113,7 +116,7 @@ class CGC_Activity_Feed {
 				}
 			}
 			if( $update )
-				update_user_meta( $row->user_id, $this->feed_var, $feed );
+				$this->update_feed( $row->user_id, $feed );
 		}
 
 		$this->add_delete_flags( $delete_flags );
@@ -174,18 +177,21 @@ class CGC_Activity_Feed {
 	}
 
 	function get_latest_items( $user = NULL, $reference = NULL ){
+		$latest_data = array();
+
 		if( ! $user )
 			$user = get_current_user_id();
+
+		if( ! $user )
+			return $latest_data;
 
 		$feed_data = $this->get_items( $user );
 
 		if( ! $reference )
 			return $feed_data;
 
-		$latest_data = array();
-
 		foreach( $feed_data as $item ){
-			if( $item['_key'] == $reference )
+			if( $item['_timestamp'] == $reference )
 				break;
 
 			$latest_data[] = $item;
@@ -315,7 +321,7 @@ class CGC_Activity_Feed {
 			foreach( $new_feed as &$item ){
 				$item['_read'] = current_time( 'timestamp' );
 			}
-			update_user_meta( $user_id, $this->feed_var, $new_feed, $feed );
+			$this->update_feed( $user_id, $new_feed, $feed );
 		}
 		exit();
 	}

@@ -19,12 +19,15 @@ $user: User ID or array of User IDs
 
 $args:
 * type: Type of feed item. Default: link (required)
-* href: URL
-* class: Additional class names
-* id: Give the feed item a unique identifier
+* post_id: If the item is related to a specific Post ID, it's in your best benefit to put it here.
+* href: URL for this item
+* class: Additional class names for the feed item.
+* id: Give the feed item an ID attribute
 * image: When using an image type, the source of the image
 * content: The text/HTML content of the feed item.
-* date: Date of the item
+* date: Formatted date of the item
+
+- Keep in mind when using a custom Feed Item Type, with the exception of "type" and "post_id", these vars can be anything your heart desires.
 
 CGC Activity Feed by default ships with 2 activity types.
 * link (default)
