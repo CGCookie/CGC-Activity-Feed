@@ -130,7 +130,7 @@ class CGC_Activity_Feed {
 
 		$delete_flags = array();
 		foreach( $flags as $flag ){
-			$delete_flags[$flag] = current_time( 'timestamp' ) + ( 60 * 60 * 24 * 30 ); // expire after 30 days.
+			$delete_flags[$flag] = current_time( 'timestamp' ) + ( 60 * 60 ); // expire after 1 hour
 		}
 
 		$orig_flags = $this->get_delete_flags();
@@ -191,7 +191,7 @@ class CGC_Activity_Feed {
 			return $feed_data;
 
 		foreach( $feed_data as $item ){
-			if( $item['_timestamp'] == $reference )
+			if( $item['_key'] <= $reference )
 				break;
 
 			$latest_data[] = $item;
