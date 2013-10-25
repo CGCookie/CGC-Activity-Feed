@@ -109,7 +109,10 @@ jQuery(function($){
 		if( cgcaf_data.delete_flags && cgcaf_data.delete_flags.length ){
 			var total_deletes = cgcaf_data.delete_flags.length;
 			for( var d=0; d <= total_deletes; d++ ){
-				$('li[data-key="' + cgcaf_data.delete_flags[d] + '"]', $activity_feed).remove();
+				var $removal = $('li[data-key="' + cgcaf_data.delete_flags[d] + '"]', $activity_feed);
+				$removal.fadeOut('fast', function(){
+					$removal.remove();
+				});
 			}
 			cgcaf_update_count_icon();
 		}
