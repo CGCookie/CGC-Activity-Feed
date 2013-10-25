@@ -22,6 +22,19 @@ function cgcaf_add_item( $user, $args ){
 }
 
 /**
+ * Removes one or more items from a users feed
+ * @param  mixed $user User ID or array of User IDs
+ * @param  mixed $key Item Key or Post ID
+ * @param  string $type Type of item to remove if useing Post ID
+ * @return bool
+ */
+function cgcaf_remove_item( $user, $key, $type = NULL ){
+	global $cgcaf_plugin;
+	return $cgcaf_plugin->remove_item( $user, $key, $type );
+}
+
+
+/**
  * The items below are for backbone integration, which doesn't exist yet.
  */
 

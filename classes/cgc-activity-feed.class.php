@@ -71,21 +71,25 @@ class CGC_Activity_Feed {
 		return $new_key;
 	}
 
-	function remove_item( $user, $key ){
+	function remove_item( $user, $key, $type = NULL ){
 		if ( ! is_array( $user ) )
 			$user = array( $user );
 
 		foreach( $user as $user_id ){
 			$feed = $this->get_items( $user_id );
-			$new_feed = $this->_remove_item( $feed, $key );
+			$new_feed = $this->_remove_item( $feed, $key, $type );
 			$this->update_feed( $user_id, $new_feed, $feed );
 		}
 		$this->add_delete_flags( $key );
 	}
 
-	private function _remove_item( $feed, $item_key ){
+	private function _remove_item( $feed, $item_key, $type = NULL ){
 		foreach( $feed as $key => $item ){
 			$index = is_int( $item_key ) ? 'post_id' : '_key';
+
+			if( $type && $index == 'post_id' && $feed[ 'type' ] != $type )
+				continue;
+
 			if( is_array( $item_key ) ){
 				if( in_array( $item_key, $item[ $index ] ) ){
 					unset( $feed[ $key ] );
