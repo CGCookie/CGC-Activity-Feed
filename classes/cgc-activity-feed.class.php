@@ -6,6 +6,7 @@ class CGC_Activity_Feed {
 
 	var $feed_var = '_cgcaf_feed_data';
 	var $delete_flags_var = '_cgcaf_delete_flags';
+	var $max_display = 7;
 
 	function __construct(){
 
@@ -237,6 +238,7 @@ class CGC_Activity_Feed {
 
 				$response['cgcaf-data']['activity'] = $activity;
 				$response['cgcaf-data']['delete_flags'] = array_keys( $this->get_delete_flags() );
+				$response['cgcaf-data']['max_display'] = $this->max_display;
 			}
 		}
 		return $response;
@@ -250,7 +252,7 @@ class CGC_Activity_Feed {
 	}
 
 	function init_feed(){
-		$feed = $this->get_items( NULL, 7 );
+		$feed = $this->get_items( NULL, $this->max_display );
 
 		$activity = array();
 

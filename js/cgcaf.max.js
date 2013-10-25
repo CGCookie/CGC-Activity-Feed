@@ -130,11 +130,19 @@ jQuery(function($){
 			$activity_feed.find('.feed-help').remove();
 		}
 
-		var new_activity = cgcaf_data.activity.length;
+		var max_display = cgcaf_data.max_display ? cgcaf_data.max_display : 10;
+		var new_activity_count = cgcaf_data.activity.length;
+		var current_count = $activity_feed.find('li').length;
+		if( current_count + new_activity_count > max_display ){
+			new_activity_count = max_display - current_count;
+		}
 
 		var $append = $('<ul/>');
-		for( var i=0; i < new_activity; i++ ){
-			$append.append( cgcaf_data.activity[i] );
+		for( var i=0; i < new_activity_count; i++ ){
+			var new_key = $(cgcaf_data.activity[i]).data('key');
+			if( ! $('li[data-key="' + new_key + '"]', $activity_feed).length ) { // don't duplicate items.
+				$append.append( cgcaf_data.activity[i] );
+			}
 		}
 
 		$activity_feed.append( $append.html() );
