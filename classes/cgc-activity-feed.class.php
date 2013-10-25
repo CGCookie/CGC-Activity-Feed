@@ -30,8 +30,7 @@ class CGC_Activity_Feed {
 	}
 
 	function resources(){
-		#wp_register_script( 'cgcaf-init', CGCAF_DIR . '/js/cgcaf.js', array( 'heartbeat' ), CGCAF_VERSION );
-		wp_register_script( 'cgcaf-init', CGCAF_DIR . '/js/cgcaf.max.js', array( 'heartbeat' ), CGCAF_VERSION );
+		wp_register_script( 'cgcaf-init', CGCAF_DIR . '/js/cgcaf.js', array( 'heartbeat' ), CGCAF_VERSION );
 	}
 
 	function enable(){
@@ -81,11 +80,17 @@ class CGC_Activity_Feed {
 			$new_feed = $this->_remove_item( $feed, $key );
 			$this->update_feed( $user_id, $new_feed, $feed );
 		}
+		$this->add_delete_flags( $key );
 	}
 
 	private function _remove_item( $feed, $item_key ){
 		foreach( $feed as $key => $item ){
-			if( $item['_key'] == $item_key ){
+			$index = is_int( $item_key ) ? 'post_id' : '_key';
+			if( is_array( $item_key ) ){
+				if( in_array( $item_key, $item[ $index ] ) ){
+					unset( $feed[ $key ] );
+				}
+			} elseif( $item[ $index ] == $item_key ){
 				unset( $feed[ $key ] );
 			}
 		}
@@ -126,11 +131,14 @@ class CGC_Activity_Feed {
 		if( ! $flags )
 			return;
 
+		if( ! is_array( $flags ) )
+			$flags = array( $flags );
+
 		switch_to_blog( 1 ); // store everything on main blog
 
 		$delete_flags = array();
 		foreach( $flags as $flag ){
-			$delete_flags[$flag] = current_time( 'timestamp' ) + ( 60 * 60 ); // expire after 1 hour
+			$delete_flags[ $flag ] = current_time( 'timestamp' ) + ( 60 * 60 ); // expire after 1 hour
 		}
 
 		$orig_flags = $this->get_delete_flags();
