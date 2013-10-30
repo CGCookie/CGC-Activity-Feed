@@ -133,9 +133,6 @@ jQuery(function($){
 		var max_display = cgcaf_data.max_display ? cgcaf_data.max_display : 10;
 		var new_activity_count = cgcaf_data.activity.length;
 		var current_count = $activity_feed.find('li').length;
-		if( current_count + new_activity_count > max_display ){
-			new_activity_count = max_display - current_count;
-		}
 
 		var $append = $('<ul/>');
 		for( var i=0; i < new_activity_count; i++ ){
@@ -146,6 +143,10 @@ jQuery(function($){
 		}
 
 		$activity_feed.append( $append.html() );
+
+		if( $activity_feed.find('li').length > max_display ){
+			$activity_feed.find('li').slice(max_display).remove();
+		}
 
 		$activity_feed.find('.last').removeClass('last').find('li:last').addClass('last');
 
