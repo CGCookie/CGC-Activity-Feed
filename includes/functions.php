@@ -33,6 +33,16 @@ function cgcaf_remove_item( $user, $key, $type = NULL ){
 	return $cgcaf_plugin->remove_item( $user, $key, $type );
 }
 
+/**
+ * Determines if it's OK to share actions for a specific user
+ * @param  int $user User ID to check
+ * @param  string $action Specific action being performed
+ * @return bool
+ */
+function cgcaf_allow( $user, $action = NULL ){
+	global $cgcaf_plugin;
+	return $cgcaf_plugin->allow( $user, $action );
+}
 
 /**
  * The items below are for backbone integration, which doesn't exist yet.

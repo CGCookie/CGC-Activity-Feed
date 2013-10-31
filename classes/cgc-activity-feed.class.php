@@ -28,6 +28,9 @@ class CGC_Activity_Feed {
 		add_action( 'wp_ajax_cgcaf_mark_read', array( $this, 'mark_read') );
 
 		add_action( 'delete_post', array( $this, '_autodelete' ) );
+
+		add_action( 'cgc_settings_privacy', array( $this, 'privacy_settings' ) );
+		add_action( 'cgc_save_privacy', array( $this, 'save_privacy') );
 	}
 
 	function resources(){
@@ -338,5 +341,24 @@ class CGC_Activity_Feed {
 			$this->update_feed( $user_id, $new_feed, $feed );
 		}
 		exit();
+	}
+
+	function allow( $user_id, $action = NULL ){
+		$allow = ! get_user_meta( $user_id, 'cgcaf_opt_out', true );
+		return apply_filters( 'cgcaf_allow', $allow, $action, $user_id );
+	}
+
+	function privacy_settings( $user_id ){
+		?><p>
+			<label>
+				<input type="checkbox" value="1" name="cgcaf_opt_out" <?php checked( true, get_user_meta( $user_id, 'cgcaf_opt_out', true ) ); ?>/>
+				<span><?php _e( 'Do NOT let people know when you follow, upload images, or love an image on the network', 'cgcaf' ); ?></span>
+			</label>
+		</p><?php
+	}
+
+	function save_privacy( $user_id ){
+		$opt_out = isset( $_POST['cgcaf_opt_out'] ) ? true : false;
+		update_user_meta( $user_id, 'cgcaf_opt_out', $opt_out );
 	}
 }
