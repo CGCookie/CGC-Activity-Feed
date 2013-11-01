@@ -35,10 +35,12 @@ class CGC_Activity_Feed {
 
 	function resources(){
 		wp_register_script( 'cgcaf-init', CGCAF_DIR . '/js/cgcaf.js', array( 'heartbeat' ), CGCAF_VERSION );
+		wp_register_style( 'cgcaf', CGCAF_DIR . '/css/cgcaf.min.css', array(), CGCAF_VERSION );
 	}
 
 	function enable(){
 		wp_enqueue_script( 'cgcaf-init' );
+		wp_enqueue_style( 'cgcaf' );
 	}
 
 	function add_item( $user, $item ){
@@ -180,9 +182,12 @@ class CGC_Activity_Feed {
 			$user = get_current_user_id();
 
 		$feed_data = get_user_meta( $user, $this->feed_var, true );
+		if( ! $feed_data )
+			$feed_data = array();
+
 		$total = count( $feed_data );
 
-		if( $limit && $limit > $feed_data ){
+		if( $limit && $limit > $total ){
 			$feed_data = array_slice( $feed_data, $offset, $limit );
 		}
 

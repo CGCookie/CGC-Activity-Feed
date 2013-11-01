@@ -13,7 +13,7 @@ jQuery(function($){
 			data: {
 				action:'cgcaf_initialize'
 			},
-			success: function(response){
+			success: function( response ){
 				cgcaf_update_feed( response );
 			}
 		});
@@ -35,7 +35,7 @@ jQuery(function($){
 		};
 
 		return obj;
-	}
+	};
 
 	wp.heartbeat.enqueue( 'cgcaf-activity', 'cgcaf_hb_activity', false );
 
@@ -79,7 +79,7 @@ jQuery(function($){
 			$parent.append( $unread_count );
 			$unread_count.fadeIn( 'fast' );
 		} else {
-			var current_count = parseInt( $unread_count.text() );
+			var current_count = parseInt( $unread_count.text(), 10 );
 
 			// be sure there was a change.
 			if( current_count == count )
@@ -98,32 +98,33 @@ jQuery(function($){
 		}
 	}
 
+	function cgc_fade_out_and_remove( $obj ){
+		$obj.fadeOut('fast', function(){
+			$obj.remove();
+		});
+	}
+
 	function cgcaf_update_feed( cgcaf_data ){
 		cgcaf_data = cgcaf_data ? cgcaf_data : false;
 
 		var $activity_feed = $( '.cgcaf-activity-feed' );
 
-		if( ! cgcaf_data )
-			return;
-
-		if( cgcaf_data.delete_flags && cgcaf_data.delete_flags.length ){
-			var total_deletes = cgcaf_data.delete_flags.length;
-			for( var d=0; d <= total_deletes; d++ ){
-				var $removal = $('li[data-key="' + cgcaf_data.delete_flags[d] + '"]', $activity_feed);
-				$removal.fadeOut('fast', function(){
-					$removal.remove();
-				});
-			}
-			cgcaf_update_count_icon();
-		}
-
-		if( ! cgcaf_data.activity.length ){
+		if( ! cgcaf_data || ! cgcaf_data.activity.length ){
 			// teach about new activity feed.
 			if( ! $activity_feed.find('li').length ){
 				var $learn_li = $('<li />').addClass('feed-help').html('This is your activity feed. When users you follow upload or favorite images, or if you have a new follower, you will be notified here.');
 				$activity_feed.append( $learn_li );
 			}
 			return;
+		}
+
+		if( cgcaf_data.delete_flags && cgcaf_data.delete_flags.length ){
+			var total_deletes = cgcaf_data.delete_flags.length;
+			for( var d=0; d <= total_deletes; d++ ){
+				var $removal = $('li[data-key="' + cgcaf_data.delete_flags[d] + '"]', $activity_feed);
+				cgc_fade_out_and_remove( $removal );
+			}
+			cgcaf_update_count_icon();
 		}
 
 		if( $activity_feed.find('.feed-help').length ){

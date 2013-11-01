@@ -1,0 +1,42 @@
+.unread-itmes {
+	position: relative;
+}
+.unread-feed-count {
+	position: absolute;
+	bottom: 2px;
+	left: 50%;
+	background: #DB4646;
+	color: #FFF;
+	border-radius: 3px;
+	text-align: center;
+	font-size: 12px;
+	height: 16px;
+	padding:0 4px;
+	line-height: 15px;
+	border-bottom: 1px solid #301816;
+}
+.feed-help {
+	font-size:85%;
+	padding:15px;
+}
+.cgcaf-image img {
+	float:left;
+	margin-right:10px;
+	max-width:50px;
+}
+.cgcaf-image .image-text {
+	float:left;
+	width:136px;
+	font-size:11px;
+	color: #ACB3BB;
+}
+.cgcaf-image .image-text .image-title {
+	color:#e5ad0b;
+	display:block;
+	font-size:12px;
+}
+.cgcaf-image .image-text:after {
+	clear:both;
+	content:'';
+	display: table;
+}
