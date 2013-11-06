@@ -147,7 +147,11 @@ class CGC_Activity_Feed {
 
 	function get_delete_flags(){
 
+<<<<<<< HEAD
 		global $wpdb;
+=======
+		return array();
+>>>>>>> dev
 
 		switch_to_blog( 1 ); // store everything on main blog
 		$flags = $wpdb->get_col( $wpdb->prepare( "SELECT `option_value` FROM {$wpdb->options} WHERE `option_name` = %s ", $this->delete_flags_var ) );
