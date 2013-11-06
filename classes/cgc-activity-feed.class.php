@@ -171,7 +171,7 @@ class CGC_Activity_Feed {
 	}
 
 	function get_delete_flags(){
-		return array();
+
 		switch_to_blog( 1 ); // store everything on main blog
 		$flags = get_option( $this->delete_flags_var );
 		restore_current_blog();
@@ -250,7 +250,7 @@ class CGC_Activity_Feed {
 				}
 
 				$response['cgcaf-data']['activity'] = $activity;
-				$response['cgcaf-data']['delete_flags'] = array_keys( $this->get_delete_flags() );
+				//$response['cgcaf-data']['delete_flags'] = array_keys( $this->get_delete_flags() );
 				$response['cgcaf-data']['max_display'] = $this->max_display;
 			}
 		}
