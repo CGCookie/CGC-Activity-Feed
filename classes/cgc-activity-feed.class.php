@@ -8,6 +8,8 @@ class CGC_Activity_Feed {
 	var $delete_flags_var = '_cgcaf_delete_flags';
 	var $max_display = 7;
 
+	var $delete_flags;
+
 	function __construct(){
 
 	}
@@ -17,6 +19,9 @@ class CGC_Activity_Feed {
 	}
 
 	function _init(){
+
+		$this->delete_flags = new CWS_Fragment_Cache( $this->delete_flags_var, 3600 );
+
 		add_action( 'wp_enqueue_scripts', array( $this, 'resources' ) );
 
 		add_filter( 'cgcaf_feed_item', array( $this, 'default_feed_item' ), 10, 3 );
@@ -169,6 +174,9 @@ class CGC_Activity_Feed {
 	function get_delete_flags(){
 		global $wpdb;
 
+		if( $this->delete_flags->get_output() )
+			return $this->delete_flags->get_output();
+
 		switch_to_blog( 1 ); // store everything on main blog
 		$flags = $wpdb->get_col( $wpdb->prepare( "SELECT `option_value` FROM {$wpdb->options} WHERE `option_name` = %s ", $this->delete_flags_var ) );
 		restore_current_blog();
@@ -178,6 +186,8 @@ class CGC_Activity_Feed {
 
 		if( ! is_array( $flags ) )
 			$flags = array();
+
+		$this->delete_flags->store( $flags );
 
 		return $flags;
 	}
