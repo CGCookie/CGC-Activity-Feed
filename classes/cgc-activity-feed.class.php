@@ -146,6 +146,9 @@ class CGC_Activity_Feed {
 	}
 
 	function get_delete_flags(){
+
+		return array();
+
 		switch_to_blog( 1 ); // store everything on main blog
 		$flags = get_option( $this->delete_flags_var );
 		restore_current_blog();
