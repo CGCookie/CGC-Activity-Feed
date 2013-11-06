@@ -12,6 +12,10 @@ class CGC_Activity_Feed {
 	}
 
 	function initialize(){
+
+		if( ! is_user_logged_in() )
+			return;
+
 		add_action( 'init', array( $this, '_init') );
 	}
 
