@@ -222,7 +222,7 @@ class CGC_Activity_Feed {
 				}
 
 				$response['cgcaf-data']['activity'] = $activity;
-				$response['cgcaf-data']['delete_flags'] = array_keys( $this->get_delete_flags() );
+				//$response['cgcaf-data']['delete_flags'] = array_keys( $this->get_delete_flags() );
 			}
 		}
 		return $response;
