@@ -22,6 +22,29 @@ function cgcaf_add_item( $user, $args ){
 }
 
 /**
+ * Removes one or more items from a users feed
+ * @param  mixed $user User ID or array of User IDs
+ * @param  mixed $key Item Key or Post ID
+ * @param  string $type Type of item to remove if useing Post ID
+ * @return bool
+ */
+function cgcaf_remove_item( $user, $key, $type = NULL ){
+	global $cgcaf_plugin;
+	return $cgcaf_plugin->remove_item( $user, $key, $type );
+}
+
+/**
+ * Determines if it's OK to share actions for a specific user
+ * @param  int $user User ID to check
+ * @param  string $action Specific action being performed
+ * @return bool
+ */
+function cgcaf_allow( $user, $action = NULL ){
+	global $cgcaf_plugin;
+	return $cgcaf_plugin->allow( $user, $action );
+}
+
+/**
  * The items below are for backbone integration, which doesn't exist yet.
  */
 
