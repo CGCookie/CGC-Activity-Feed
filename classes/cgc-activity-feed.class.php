@@ -6,6 +6,7 @@ class CGC_Activity_Feed {
 
 	var $feed_var = '_cgcaf_feed_data';
 	var $delete_flags_var = '_cgcaf_delete_flags';
+	var $max_display = 7;
 
 	function __construct(){
 
@@ -23,24 +24,23 @@ class CGC_Activity_Feed {
 		add_filter( 'cgcaf_feed_item_image', array( $this, 'image_feed_item' ), 10, 3 );
 
 		add_action( 'wp_ajax_cgcaf_initialize', array( $this, 'init_feed') );
-		add_action( 'wp_ajax_nopriv_cgcaf_initialize', array( $this, 'init_feed') );
-
 		add_filter( 'heartbeat_received', array( $this, 'hb_latest_activity' ), 10, 3 );
-		add_filter( 'heartbeat_nopriv_received', array( $this, 'hb_latest_activity' ), 10, 3 );
-
 		add_action( 'wp_ajax_cgcaf_mark_read', array( $this, 'mark_read') );
-		add_action( 'wp_ajax_nopriv_cgcaf_mark_read', array( $this, 'mark_read') );
 
 		add_action( 'delete_post', array( $this, '_autodelete' ) );
+
+		add_action( 'cgc_settings_privacy', array( $this, 'privacy_settings' ) );
+		add_action( 'cgc_save_privacy', array( $this, 'save_privacy') );
 	}
 
 	function resources(){
-		#wp_register_script( 'cgcaf-init', CGCAF_DIR . '/js/cgcaf.js', array( 'heartbeat' ), CGCAF_VERSION );
-		wp_register_script( 'cgcaf-init', CGCAF_DIR . '/js/cgcaf.max.js', array( 'heartbeat' ), CGCAF_VERSION );
+		wp_register_script( 'cgcaf-init', CGCAF_DIR . '/js/cgcaf.js', array( 'heartbeat' ), CGCAF_VERSION );
+		wp_register_style( 'cgcaf', CGCAF_DIR . '/css/cgcaf.min.css', array(), CGCAF_VERSION );
 	}
 
 	function enable(){
 		wp_enqueue_script( 'cgcaf-init' );
+		wp_enqueue_style( 'cgcaf' );
 	}
 
 	function add_item( $user, $item ){
@@ -71,30 +71,48 @@ class CGC_Activity_Feed {
 			if( ! in_array( $item, $feed ) ){
 				$new_feed = $feed;
 				array_unshift( $new_feed, $item ); // we want this at the beginning
-				update_user_meta( $user_id, $this->feed_var, $new_feed, $feed );
+				$this->update_feed( $user_id, $new_feed, $feed );
 			}
 		}
 		return $new_key;
 	}
 
-	function remove_item( $user, $key ){
+	function remove_item( $user, $key, $type = NULL ){
 		if ( ! is_array( $user ) )
 			$user = array( $user );
 
 		foreach( $user as $user_id ){
 			$feed = $this->get_items( $user_id );
-			$new_feed = $this->_remove_item( $feed, $key );
-			update_user_meta( $user_id, $this->feed_var, $new_feed, $feed );
+			$new_feed = $this->_remove_item( $feed, $key, $type );
+			$this->update_feed( $user_id, $new_feed, $feed );
 		}
+		$this->add_delete_flags( $key );
 	}
 
-	private function _remove_item( $feed, $item_key ){
+	private function _remove_item( $feed, $item_key, $type = NULL ){
 		foreach( $feed as $key => $item ){
-			if( $item['_key'] == $item_key ){
+			$index = is_int( $item_key ) ? 'post_id' : '_key';
+
+			if( $type && $index == 'post_id' && $feed[ 'type' ] != $type )
+				continue;
+
+			if( is_array( $item_key ) ){
+				if( in_array( $item_key, $item[ $index ] ) ){
+					unset( $feed[ $key ] );
+				}
+			} elseif( $item[ $index ] == $item_key ){
 				unset( $feed[ $key ] );
 			}
 		}
 		return $feed;
+	}
+
+	function update_feed( $user_id, $new_feed, $old_feed = array() ){
+		if( ! $new_feed ){
+			delete_user_meta( $user_id, $this->feed_var );
+		} else {
+			update_user_meta( $user_id, $this->feed_var, $new_feed, $old_feed );
+		}
 	}
 
 	function _autodelete( $post_id ){
@@ -113,7 +131,7 @@ class CGC_Activity_Feed {
 				}
 			}
 			if( $update )
-				update_user_meta( $row->user_id, $this->feed_var, $feed );
+				$this->update_feed( $row->user_id, $feed );
 		}
 
 		$this->add_delete_flags( $delete_flags );
@@ -123,11 +141,14 @@ class CGC_Activity_Feed {
 		if( ! $flags )
 			return;
 
+		if( ! is_array( $flags ) )
+			$flags = array( $flags );
+
 		switch_to_blog( 1 ); // store everything on main blog
 
 		$delete_flags = array();
 		foreach( $flags as $flag ){
-			$delete_flags[$flag] = current_time( 'timestamp' ) + ( 60 * 60 * 24 * 30 ); // expire after 30 days.
+			$delete_flags[ $flag ] = current_time( 'timestamp' ) + ( 60 * 60 ); // expire after 1 hour
 		}
 
 		$orig_flags = $this->get_delete_flags();
@@ -146,12 +167,7 @@ class CGC_Activity_Feed {
 	}
 
 	function get_delete_flags(){
-
-<<<<<<< HEAD
 		global $wpdb;
-=======
-		return array();
->>>>>>> dev
 
 		switch_to_blog( 1 ); // store everything on main blog
 		$flags = $wpdb->get_col( $wpdb->prepare( "SELECT `option_value` FROM {$wpdb->options} WHERE `option_name` = %s ", $this->delete_flags_var ) );
@@ -171,9 +187,12 @@ class CGC_Activity_Feed {
 			$user = get_current_user_id();
 
 		$feed_data = get_user_meta( $user, $this->feed_var, true );
+		if( ! $feed_data )
+			$feed_data = array();
+
 		$total = count( $feed_data );
 
-		if( $limit && $limit > $feed_data ){
+		if( $limit && $limit > $total ){
 			$feed_data = array_slice( $feed_data, $offset, $limit );
 		}
 
@@ -184,18 +203,21 @@ class CGC_Activity_Feed {
 	}
 
 	function get_latest_items( $user = NULL, $reference = NULL ){
+		$latest_data = array();
+
 		if( ! $user )
 			$user = get_current_user_id();
+
+		if( ! $user )
+			return $latest_data;
 
 		$feed_data = $this->get_items( $user );
 
 		if( ! $reference )
 			return $feed_data;
 
-		$latest_data = array();
-
 		foreach( $feed_data as $item ){
-			if( $item['_key'] == $reference )
+			if( $item['_key'] <= $reference )
 				break;
 
 			$latest_data[] = $item;
@@ -229,6 +251,7 @@ class CGC_Activity_Feed {
 
 				$response['cgcaf-data']['activity'] = $activity;
 				$response['cgcaf-data']['delete_flags'] = array_keys( $this->get_delete_flags() );
+				$response['cgcaf-data']['max_display'] = $this->max_display;
 			}
 		}
 		return $response;
@@ -242,7 +265,7 @@ class CGC_Activity_Feed {
 	}
 
 	function init_feed(){
-		$feed = $this->get_items( NULL, 7 );
+		$feed = $this->get_items( NULL, $this->max_display );
 
 		$activity = array();
 
@@ -325,8 +348,28 @@ class CGC_Activity_Feed {
 			foreach( $new_feed as &$item ){
 				$item['_read'] = current_time( 'timestamp' );
 			}
-			update_user_meta( $user_id, $this->feed_var, $new_feed, $feed );
+			$this->update_feed( $user_id, $new_feed, $feed );
 		}
 		exit();
 	}
+
+	function allow( $user_id, $action = NULL ){
+		$allow = ! get_user_meta( $user_id, 'cgcaf_opt_out', true );
+		return apply_filters( 'cgcaf_allow', $allow, $action, $user_id );
+	}
+
+	function privacy_settings( $user_id ){
+		?><p>
+			<label>
+				<input type="checkbox" value="1" name="cgcaf_opt_out" <?php checked( true, get_user_meta( $user_id, 'cgcaf_opt_out', true ) ); ?>/>
+				<span><?php _e( 'Do NOT let people know when you follow, upload images, or love an image on the network', 'cgcaf' ); ?></span>
+			</label>
+		</p><?php
+	}
+
+	function save_privacy( $user_id ){
+		$opt_out = isset( $_POST['cgcaf_opt_out'] ) ? true : false;
+		update_user_meta( $user_id, 'cgcaf_opt_out', $opt_out );
+	}
 }
+
