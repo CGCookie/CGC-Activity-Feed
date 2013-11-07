@@ -249,6 +249,7 @@ class CGC_Activity_Feed {
 			if( $data['cgcaf_hb_activity']['action'] == 'latest' ){
 				$last = $data['cgcaf_hb_activity']['last'];
 
+				$user = get_current_user_ID();
 				$latest = $this->get_latest_items( NULL, $last );
 
 				$activity = array();
