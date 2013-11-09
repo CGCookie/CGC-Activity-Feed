@@ -205,7 +205,7 @@ class CGC_Activity_Feed {
 
 		$total = count( $feed_data );
 
-		if( $limit && $limit > $total ){
+		if( $limit && $total > $limit ){
 			$feed_data = array_slice( $feed_data, $offset, $limit );
 		}
 
