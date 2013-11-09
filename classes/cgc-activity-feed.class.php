@@ -16,11 +16,13 @@ class CGC_Activity_Feed {
 
 	function initialize(){
 		add_action( 'init', array( $this, '_init') );
+
+		if( class_exists( 'CWS_Fragment_Cache' ) ){
+			$this->delete_flags = new CWS_Fragment_Cache( $this->delete_flags_var, 3600 );
+		}
 	}
 
 	function _init(){
-
-		$this->delete_flags = new CWS_Fragment_Cache( $this->delete_flags_var, 3600 );
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'resources' ) );
 
@@ -174,7 +176,7 @@ class CGC_Activity_Feed {
 	function get_delete_flags(){
 		global $wpdb;
 
-		if( $this->delete_flags->get_output() )
+		if( $this->delete_flags && $this->delete_flags->get_output() )
 			return $this->delete_flags->get_output();
 
 		switch_to_blog( 1 ); // store everything on main blog
@@ -187,7 +189,8 @@ class CGC_Activity_Feed {
 		if( ! is_array( $flags ) )
 			$flags = array();
 
-		$this->delete_flags->store( $flags );
+		if( $this->delete_flags )
+			$this->delete_flags->store( $flags );
 
 		return $flags;
 	}
