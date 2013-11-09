@@ -143,7 +143,7 @@ jQuery(function($){
 			}
 		}
 
-		$activity_feed.append( $append.html() );
+		$activity_feed.prepend( $append.html() );
 
 		if( $activity_feed.find('li').length > max_display ){
 			$activity_feed.find('li').slice(max_display).remove();
