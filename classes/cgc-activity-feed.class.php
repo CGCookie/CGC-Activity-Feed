@@ -64,7 +64,8 @@ class CGC_Activity_Feed {
 			'id'		=> '',
 			'class'		=> '',
 			'href'		=> '',
-			'content'	=> ''
+			'content'	=> '',
+			'icon' => ''
 		);
 
 		$item = array_merge( $defaults, $item );
@@ -305,7 +306,7 @@ class CGC_Activity_Feed {
 	}
 
 	function template_image(){
-		$template = '<li data-key="%1$s" class="cgcaf-image %4$s"%5$s><a href="%3$s"><img src="%6$s" class="%7$s" /><span class="image-text">%2$s</span></a></li>';
+		$template = '<li data-key="%1$s" class="cgcaf-image %4$s"%5$s><a href="%3$s"><img src="%6$s" class="%7$s" /><span class="image-text">%2$s</span></a><span class="notification-icon">%8$s</span></li>';
 		$template = apply_filters( 'cgcaf_image_template', $template );
 		return $template;
 	}
@@ -322,7 +323,9 @@ class CGC_Activity_Feed {
 			$item['content'],
 			$item['href'],
 			$item['class'],
-			$id
+			$id,
+			$item['icon']
+
 		);
 		return $element;
 	}
@@ -349,7 +352,8 @@ class CGC_Activity_Feed {
 			$item['class'],
 			$id,
 			$item['image'],
-			$item['image_class']
+			$item['image_class'],
+			$item['icon']			
 		);
 
 		return $element;
