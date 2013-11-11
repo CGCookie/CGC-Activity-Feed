@@ -43,7 +43,6 @@ class CGC_Activity_Feed {
 
 	function resources(){
 		wp_register_script( 'cgcaf-init', CGCAF_DIR . '/js/cgcaf.js', array( 'heartbeat' ), CGCAF_VERSION );
-		wp_register_style( 'cgcaf', CGCAF_DIR . '/css/cgcaf.min.css', array(), CGCAF_VERSION );
 	}
 
 	function enable(){
