@@ -312,11 +312,12 @@ class CGC_Activity_Feed {
 
 	function default_feed_item( $element, $item, $user ){
 		$id = $item['id'] ? ' id="' . $item['id'] . '"' : '';
+		$class = trim( $item['class'] . ' type-' . $item['type'] );
 		$element = sprintf( $this->template_link(),
 			$item['_key'],
 			$item['content'],
 			$item['href'],
-			$item['class'],
+			$class,
 			$id
 		);
 		return $element;
