@@ -26,6 +26,7 @@ class CGC_Activity_Feed {
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'resources' ) );
 
+		add_filter( 'cgcaf_item_args', array( $this, 'item_default_class' ), 10, 2 );
 		add_filter( 'cgcaf_feed_item', array( $this, 'default_feed_item' ), 10, 3 );
 		add_filter( 'cgcaf_feed_item_link', array( $this, 'link_feed_item' ), 10, 3 );
 		add_filter( 'cgcaf_feed_item_image', array( $this, 'image_feed_item' ), 10, 3 );
@@ -310,14 +311,18 @@ class CGC_Activity_Feed {
 		return $template;
 	}
 
+	function item_default_class( $item, $user ){
+		$item['class'] = trim( $item['class'] . ' type-' . $item['type'] );
+		return $item;
+	}
+
 	function default_feed_item( $element, $item, $user ){
 		$id = $item['id'] ? ' id="' . $item['id'] . '"' : '';
-		$class = trim( $item['class'] . ' type-' . $item['type'] );
 		$element = sprintf( $this->template_link(),
 			$item['_key'],
 			$item['content'],
 			$item['href'],
-			$class,
+			$item['class'],
 			$id
 		);
 		return $element;
